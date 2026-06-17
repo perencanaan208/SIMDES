@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<!-- ============================================================ -->
+<!-- JUDUL TAB BROWSER (muncul di bar tab, bukan URL) -->
+<!-- ============================================================ -->
+<title>SIMDES — Desa Baleharjo</title>
+
+<!-- ============================================================ -->
+<!-- DESKRIPSI & SEO DASAR -->
+<!-- ============================================================ -->
+<meta name="description" content="Sistem Informasi Manajemen Pembangunan Desa Baleharjo, Kecamatan Sukodono, Kabupaten Sragen.">
+<meta name="author" content="Pemerintah Desa Baleharjo">
+<meta name="robots" content="index, follow">
+
+<!-- ============================================================ -->
+<!-- FAVICON (ikon di tab browser) -->
+<!-- ============================================================ -->
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+
+<!-- ============================================================ -->
+<!-- OPEN GRAPH — judul & gambar saat link dibagikan -->
+<!-- (WhatsApp, Telegram, Facebook, dll akan baca tag ini) -->
+<!-- ============================================================ -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SIMDES Baleharjo">
+<meta property="og:title" content="SIMDES — Sistem Informasi Manajemen Pembangunan Desa Baleharjo">
+<meta property="og:description" content="Pantau progres pembangunan, realisasi anggaran, dan dokumentasi kegiatan Desa Baleharjo secara transparan dan real-time.">
+<meta property="og:image" content="/og-image.png">
+<meta property="og:url" content="https://simdes-baleharjo.vercel.app">
+<meta property="og:locale" content="id_ID">
+
+<!-- ============================================================ -->
+<!-- TWITTER CARD (sebagian platform pakai tag ini juga) -->
+<!-- ============================================================ -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SIMDES — Desa Baleharjo">
+<meta name="twitter:description" content="Sistem Informasi Manajemen Pembangunan Desa Baleharjo.">
+<meta name="twitter:image" content="/og-image.png">
+
+<!-- ============================================================ -->
+<!-- THEME COLOR (warna address bar di mobile Chrome/Safari) -->
+<!-- ============================================================ -->
+<meta name="theme-color" content="#2E6B15">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #1A3D0A; }
+
+  #loader {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1A3D0A 0%, #2E6B15 100%);
+    z-index: 10;
+    transition: opacity .4s ease, visibility .4s ease;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  #loader.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .logo-box {
+    width: 64px; height: 64px; border-radius: 16px;
+    background: rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+    font-size: 30px;
+  }
+  .loader-title { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: .3px; margin-bottom: 6px; }
+  .loader-sub   { color: #C8E6A0; font-size: 12px; margin-bottom: 22px; }
+
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(255,255,255,.25);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #app-frame {
+    width: 100%; height: 100%;
+    border: none; display: block;
+  }
+
+  #err-box {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    background: #F0F4EE; z-index: 11; text-align: center; padding: 2rem;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  #err-box.show { display: flex; }
+  #err-box h3 { color: #2E6B15; margin-bottom: 8px; font-size: 17px; }
+  #err-box p  { color: #5A7050; font-size: 13px; max-width: 380px; line-height: 1.6; margin-bottom: 18px; }
+  #err-box a  {
+    background: #2E6B15; color: #fff; text-decoration: none;
+    padding: 10px 22px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="logo-box">🏛️</div>
+    <div class="loader-title">SIMDES — Desa Baleharjo</div>
+    <div class="loader-sub">Sistem Informasi Manajemen Pembangunan Desa</div>
+    <div class="spinner"></div>
+  </div>
+
+  <!-- FALLBACK JIKA IFRAME GAGAL DIMUAT -->
+  <div id="err-box">
+    <h3>⚠️ Gagal memuat aplikasi</h3>
+    <p>Sepertinya koneksi terputus atau server sedang sibuk. Klik tombol di bawah untuk membuka langsung di tab baru.</p>
+    <a href="https://script.google.com/macros/s/AKfycbyMzYLlPNDLDTbJpCiJKQSDCAhFJQX9-pEadsFjlh-JD9v-FUbJ500aST1TO4vfVsWN/exec" target="_top">Buka SIMDES</a>
+  </div>
+
+  <!-- IFRAME PROXY KE GOOGLE APPS SCRIPT -->
+  <iframe
+    id="app-frame"
+    src="https://script.google.com/macros/s/AKfycbyMzYLlPNDLDTbJpCiJKQSDCAhFJQX9-pEadsFjlh-JD9v-FUbJ500aST1TO4vfVsWN/exec"
+    title="SIMDES Desa Baleharjo"
+    allow="clipboard-read; clipboard-write"
+    referrerpolicy="origin"
+  ></iframe>
+
+<script>
+  const loader  = document.getElementById('loader');
+  const frame   = document.getElementById('app-frame');
+  const errBox  = document.getElementById('err-box');
+  let loaded = false;
+
+  frame.addEventListener('load', () => {
+    loaded = true;
+    loader.classList.add('hide');
+  });
+
+  // Jika dalam 12 detik iframe belum load (kemungkinan diblokir / error), tampilkan fallback
+  setTimeout(() => {
+    if (!loaded) {
+      loader.classList.add('hide');
+      errBox.classList.add('show');
+    }
+  }, 12000);
+
+  // Set judul tab tetap "SIMDES" walau iframe coba override
+  setInterval(() => {
+    if (document.title !== 'SIMDES — Desa Baleharjo') {
+      document.title = 'SIMDES — Desa Baleharjo';
+    }
+  }, 1000);
+</script>
+
+</body>
+</html>
