@@ -1,3 +1,4 @@
+[README (2).md](https://github.com/user-attachments/files/29067646/README.2.md)
 # SIMDES — Desa Baleharjo (Domain Custom via Vercel)
 
 Folder ini membuat **domain sendiri** (misal `simdes-baleharjo.vercel.app` atau domain pribadi seperti `simdes.desabaleharjo.id`) yang menampilkan aplikasi SIMDES dari Google Apps Script, tanpa mengubah link panjang `script.google.com/...` yang aslinya.
@@ -79,7 +80,27 @@ Redeploy Vercel hanya diperlukan jika:
 - Google Apps Script web app sudah mengizinkan dibuka dalam iframe (`XFrameOptionsMode.ALLOWALL` di `doGet()`), sehingga pendekatan iframe ini bisa berjalan tanpa perlu mengubah kode backend SIMDES.
 - Jika suatu saat iframe gagal memuat (misalnya Google mengubah kebijakan, atau koneksi lambat), halaman otomatis menampilkan tombol fallback untuk membuka SIMDES langsung di tab baru setelah 12 detik.
 
-## Troubleshooting: domain malah men-download file, bukan membuka website
+## Troubleshooting: nama file di GitHub hilang ekstensinya (index, json, readme — tanpa titik)
+
+Jika di repository GitHub Anda file-nya muncul sebagai `index`, `json`, `readme` (tanpa ekstensi `.html`, `.json`, `.md`), ini adalah sumber masalah utama domain men-download file. Tanpa ekstensi yang benar, Vercel tidak tahu cara menyajikan file tersebut sebagai halaman web.
+
+**Cara memperbaiki langsung di GitHub (tanpa upload ulang):**
+
+1. Buka repository → klik nama file **`index`**.
+2. Klik ikon pensil (Edit this file) di pojok kanan atas.
+3. Di bagian atas editor, klik nama file **`index`** (di sebelah ikon repo), ubah menjadi **`index.html`**.
+4. Scroll ke bawah → klik **Commit changes**.
+5. Ulangi langkah yang sama untuk:
+   - file **`json`** → ubah nama jadi **`vercel.json`**
+   - file **`readme`** → ubah nama jadi **`README.md`**
+6. Setelah ketiga nama file diperbaiki, Vercel akan otomatis redeploy dalam beberapa puluh detik.
+7. Buka kembali domain Anda — seharusnya sudah tampil normal sebagai halaman web.
+
+**Catatan penting:** pastikan juga **isi** ketiga file tersebut benar (bukan hanya nama-nya). Klik masing-masing file untuk memeriksa isinya cocok dengan yang seharusnya — terutama `vercel.json` harus berisi persis:
+```json
+{ "cleanUrls": true }
+```
+Jika isinya berbeda atau kosong, hapus seluruh isi dan ganti dengan kode di atas sebelum commit.
 
 Ini terjadi jika `vercel.json` punya konfigurasi header yang tidak standar (versi awal file ini memang sempat begitu — sudah diperbaiki). Jika Anda mengalami ini setelah deploy:
 
