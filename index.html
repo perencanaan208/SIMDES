@@ -499,7 +499,7 @@ body.is-admin .tab.admin-only.perm-hidden { display: none !important; }
       </select>
       <select id="ft-real" onchange="filterReal()"><option value="">Semua Tahun</option></select>
       <input type="text" id="cari-real" placeholder="🔍 Cari..." oninput="filterReal()" style="flex:1;min-width:120px;">
-      <button class="btn btn-blue" onclick="cetakPDF()"><i class="ti ti-printer"></i> Cetak PDF</button>
+      <button class="btn btn-blue admin-only" onclick="cetakPDF()"><i class="ti ti-printer"></i> Cetak PDF</button>
     </div>
     <div class="sel-all-bar">
       <label><input type="checkbox" id="cb-all" onchange="toggleAll(this)"> Pilih Semua</label>
