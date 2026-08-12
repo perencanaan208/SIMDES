@@ -1,0 +1,12 @@
+{
+  "name": "SIMDES — Desa Baleharjo",
+  "short_name": "SIMDES",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F0F4EE",
+  "theme_color": "#2E6B15",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" }
+  ]
+}
