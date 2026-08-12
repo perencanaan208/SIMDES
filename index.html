@@ -18,10 +18,15 @@
 
 <!-- ============================================================ -->
 <!-- FAVICON (ikon di tab browser) -->
+<!-- ID ditambahkan supaya bisa diganti otomatis lewat JS begitu ikon -->
+<!-- di "Pengaturan > Ikon Aplikasi" SIMDES diupload/diganti Admin. -->
+<!-- File statis di bawah ini cuma dipakai sebagai fallback awal saat -->
+<!-- fetch ke SIMDES belum selesai / gagal. -->
 <!-- ============================================================ -->
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" id="wrapFavicon32">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" id="wrapFavicon192">
+<link rel="apple-touch-icon" href="/icon-192.png" id="wrapTouchIcon">
+<link rel="manifest" href="" id="wrapManifestLink">
 
 <!-- ============================================================ -->
 <!-- OPEN GRAPH — judul & gambar saat link dibagikan -->
@@ -161,6 +166,52 @@
   const frame   = document.getElementById('app-frame');
   const errBox  = document.getElementById('err-box');
   let loaded = false;
+
+  // ============================================================
+  // IKON APLIKASI DINAMIS — ambil ikon terbaru yang diupload Admin lewat
+  // "Pengaturan > Ikon Aplikasi" di SIMDES, lalu terapkan ke favicon/
+  // apple-touch-icon/manifest halaman WRAPPER ini (bukan ke iframe-nya).
+  // Ini WAJIB dilakukan di sini (halaman wrapper), bukan di dalam HTML
+  // yang disajikan Apps Script — karena keluaran HtmlService Apps Script
+  // selalu dibungkus wrapper oleh Google sendiri, jadi <link> di dalamnya
+  // tidak pernah terlihat oleh browser untuk kebutuhan "Install"/"Simpan
+  // ke Layar Utama". Endpoint ?type=manifest sudah menyematkan ikonnya
+  // sebagai Data URI langsung, jadi tidak perlu fetch tambahan ke Drive
+  // (aman dari kendala CORS lintas-domain).
+  (function terapkanIkonAplikasiDariSimdes() {
+    try {
+      const gasUrl = frame.getAttribute('src').split('?')[0];
+      fetch(gasUrl + '?type=manifest')
+        .then(function(res) { return res.json(); })
+        .then(function(manifest) {
+          const iconSrc = manifest && manifest.icons && manifest.icons[0] && manifest.icons[0].src;
+          if (!iconSrc) return;
+          const f32 = document.getElementById('wrapFavicon32');
+          const f192 = document.getElementById('wrapFavicon192');
+          const touch = document.getElementById('wrapTouchIcon');
+          if (f32) f32.setAttribute('href', iconSrc);
+          if (f192) f192.setAttribute('href', iconSrc);
+          if (touch) touch.setAttribute('href', iconSrc);
+
+          // Manifest dibuat ulang sebagai Blob DI HALAMAN INI (wrapper), bukan di
+          // dalam iframe — supaya benar-benar terbaca browser untuk dialog
+          // "Install this page as an app".
+          const manifestWrapper = {
+            name: manifest.name || 'SIMDES — Desa Baleharjo',
+            short_name: manifest.short_name || 'SIMDES',
+            start_url: '/',
+            display: 'standalone',
+            background_color: manifest.background_color || '#F0F4EE',
+            theme_color: manifest.theme_color || '#2E6B15',
+            icons: [{ src: iconSrc, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
+          };
+          const blob = new Blob([JSON.stringify(manifestWrapper)], { type: 'application/json' });
+          const manifestLink = document.getElementById('wrapManifestLink');
+          if (manifestLink) manifestLink.setAttribute('href', URL.createObjectURL(blob));
+        })
+        .catch(function() { /* diam-diam gagal, tetap pakai favicon statis default di atas */ });
+    } catch (e) { /* diam-diam gagal, bukan fitur kritikal */ }
+  })();
 
   frame.addEventListener('load', () => {
     loaded = true;
