@@ -194,10 +194,18 @@
   (function terapkanIkonAplikasiDariSimdes() {
     try {
       const gasUrl = frame.getAttribute('src').split('?')[0];
-      fetch(gasUrl + '?type=manifest')
+      // PENTING: pakai endpoint ?type=iconUrl (mengembalikan URL gambar asli,
+      // BUKAN ?type=manifest yang menyematkan ikon sebagai teks base64
+      // raksasa). Proses Android "meracik" WebAPK (yang memunculkan
+      // notifikasi "Menginstal...") perlu mengambil file ikon lewat URL
+      // biasa dari servernya sendiri — kalau ikonnya berupa data URI base64
+      // yang ditempel langsung di manifest, proses itu bisa macet tidak
+      // pernah selesai (persis gejala notif instal yang tidak kunjung
+      // beres). URL asli jauh lebih kecil & andal untuk kebutuhan ini.
+      fetch(gasUrl + '?type=iconUrl')
         .then(function(res) { return res.json(); })
-        .then(function(manifest) {
-          const iconSrc = manifest && manifest.icons && manifest.icons[0] && manifest.icons[0].src;
+        .then(function(data) {
+          const iconSrc = data && data.url;
           if (!iconSrc) return;
           const f32 = document.getElementById('wrapFavicon32');
           const f192 = document.getElementById('wrapFavicon192');
@@ -215,13 +223,13 @@
           // origin lain (script.google.com), Chrome Android akan gagal
           // menganggapnya "app" penuh dan tetap memasang badge shortcut biasa.
           const manifestWrapper = {
-            name: manifest.name || 'SIMDES — Desa Baleharjo',
-            short_name: manifest.short_name || 'SIMDES',
+            name: 'SIMDES — Desa Baleharjo',
+            short_name: 'SIMDES',
             start_url: '/',
             scope: '/',
             display: 'standalone',
-            background_color: manifest.background_color || '#F0F4EE',
-            theme_color: manifest.theme_color || '#2E6B15',
+            background_color: '#F0F4EE',
+            theme_color: '#2E6B15',
             icons: [
               { src: iconSrc, sizes: '192x192', type: 'image/png', purpose: 'any' },
               { src: iconSrc, sizes: '512x512', type: 'image/png', purpose: 'any' }
@@ -231,7 +239,7 @@
           const manifestLink = document.getElementById('wrapManifestLink');
           if (manifestLink) manifestLink.setAttribute('href', URL.createObjectURL(blob));
         })
-        .catch(function() { /* diam-diam gagal, tetap pakai favicon statis default di atas */ });
+        .catch(function() { /* diam-diam gagal, tetap pakai manifest.json statis default di atas */ });
     } catch (e) { /* diam-diam gagal, bukan fitur kritikal */ }
   })();
 
