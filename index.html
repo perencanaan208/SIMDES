@@ -195,15 +195,24 @@
 
           // Manifest dibuat ulang sebagai Blob DI HALAMAN INI (wrapper), bukan di
           // dalam iframe — supaya benar-benar terbaca browser untuk dialog
-          // "Install this page as an app".
+          // "Install this page as an app". start_url & scope SENGAJA menunjuk ke
+          // origin wrapper INI SENDIRI (bukan ke URL Apps Script), karena syarat
+          // "installability" Chrome mengharuskan start_url berada dalam origin
+          // yang sama dengan halaman yang memuat manifest-nya — kalau menunjuk
+          // origin lain (script.google.com), Chrome Android akan gagal
+          // menganggapnya "app" penuh dan tetap memasang badge shortcut biasa.
           const manifestWrapper = {
             name: manifest.name || 'SIMDES — Desa Baleharjo',
             short_name: manifest.short_name || 'SIMDES',
             start_url: '/',
+            scope: '/',
             display: 'standalone',
             background_color: manifest.background_color || '#F0F4EE',
             theme_color: manifest.theme_color || '#2E6B15',
-            icons: [{ src: iconSrc, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
+            icons: [
+              { src: iconSrc, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+              { src: iconSrc, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+            ]
           };
           const blob = new Blob([JSON.stringify(manifestWrapper)], { type: 'application/json' });
           const manifestLink = document.getElementById('wrapManifestLink');
@@ -212,6 +221,19 @@
         .catch(function() { /* diam-diam gagal, tetap pakai favicon statis default di atas */ });
     } catch (e) { /* diam-diam gagal, bukan fitur kritikal */ }
   })();
+
+  // ============================================================
+  // SERVICE WORKER — WAJIB terdaftar (walau isinya minimal/kosong) supaya
+  // Chrome Android menganggap halaman ini "benar-benar installable" dan
+  // "Simpan ke Layar Utama" menghasilkan ikon bersih TANPA badge kecil
+  // logo Chrome di pojoknya. Lihat isi lengkapnya & alasannya di sw.js.
+  // ============================================================
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function () {
+      /* diam-diam gagal (mis. browser lama) — ikon tetap tampil, cuma
+         mungkin masih dengan badge shortcut biasa */
+    });
+  }
 
   frame.addEventListener('load', () => {
     loaded = true;
