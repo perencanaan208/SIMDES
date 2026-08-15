@@ -257,14 +257,28 @@
   }
 
   frame.addEventListener('load', () => {
-    loaded = true;
-    loader.classList.add('hide');
-    errBox.classList.remove('show');
-    try { sessionStorage.removeItem('simdesRetryCount'); } catch(e){}
+    // PENTING: iframe 'load' cuma menandakan HTML/CSS/JS SIMDES sudah selesai
+    // di-parse browser — BUKAN berarti datanya (dari Google Sheets) sudah siap.
+    // Kalau loader disembunyikan di sini, akan kelihatan sekilas "tahap kedua"
+    // loading kosong (0 kegiatan, dst) sebelum data asli benar-benar tampil.
+    // Makanya loader BARU disembunyikan saat menerima pesan 'simdes:ready' dari
+    // dalam SIMDES sendiri (dikirim tepat saat Dashboard selesai dirender),
+    // supaya cuma ada SATU tahap loading yang mulus dari awal sampai akhir.
   });
 
-  // Jika dalam 12 detik iframe belum load (kemungkinan diblokir / error),
-  // tampilkan pesan singkat lalu otomatis reload halaman (tanpa perlu klik apa pun).
+  // Terima sinyal dari dalam SIMDES (iframe) bahwa data sudah selesai dimuat & Dashboard siap.
+  window.addEventListener('message', function (e) {
+    if (e && e.data && e.data.type === 'simdes:ready') {
+      loaded = true;
+      loader.classList.add('hide');
+      errBox.classList.remove('show');
+      try { sessionStorage.removeItem('simdesRetryCount'); } catch (e2) {}
+    }
+  });
+
+  // Jika dalam 25 detik SIMDES belum kirim sinyal siap (kemungkinan diblokir / error /
+  // koneksi ke Google Sheets lambat sekali), tampilkan pesan singkat lalu otomatis
+  // reload halaman (tanpa perlu klik apa pun).
   setTimeout(() => {
     if (!loaded) {
       loader.classList.add('hide');
@@ -280,7 +294,7 @@
       const delay = Math.min(3000 + (retryCount - 1) * 2000, 10000); // 3s, 5s, 7s ... maks 10s
       setTimeout(() => { location.reload(); }, delay);
     }
-  }, 12000);
+  }, 25000);
 
   // Set judul tab tetap "SIMDES" walau iframe coba override
   setInterval(() => {
