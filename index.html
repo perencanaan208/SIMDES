@@ -182,7 +182,7 @@
     id="app-frame"
     src="https://script.google.com/macros/s/AKfycbzZs3Mos9WtF3V9YKnBz5YmRU5J1yhu_bmtyBQ7UlV6IYLJnAj10pwT-FnUdNqjeu1R/exec"
     title="SIMDES Desa Baleharjo"
-    allow="clipboard-read; clipboard-write; camera; microphone"
+    allow="clipboard-read; clipboard-write; camera; microphone; geolocation"
     referrerpolicy="origin"
   ></iframe>
 
@@ -346,6 +346,28 @@
       // tuntaskan ke 100% dulu, baru loader dibuka
       Persen.selesai(function () { loader.classList.add('hide'); });
     }
+  });
+
+  // ============================================================
+  // LOKASI (GPS) UNTUK FORM POJOK ASPIRASI — iframe Apps Script tidak boleh meminta
+  // izin lokasi sendiri, jadi SIMDES meminta halaman induk (ini) mengambilnya lewat
+  // postMessage 'simdes-geo-request', lalu hasilnya dibalas 'simdes-geo-result'.
+  // Hanya menerima permintaan dari domain Google (Apps Script) dan hanya membalas ke pengirimnya.
+  // ============================================================
+  window.addEventListener('message', function (e) {
+    const d = e && e.data;
+    if (!d || d.type !== 'simdes-geo-request') return;
+    if (!/^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|google\.com)$/.test(e.origin)) return;
+    const src = e.source, origin = e.origin;
+    function balas(o) {
+      try { src.postMessage(Object.assign({ type: 'simdes-geo-result', id: d.id }, o), origin); } catch (_) {}
+    }
+    if (!navigator.geolocation) return balas({ ok: false, code: 2 });
+    navigator.geolocation.getCurrentPosition(
+      function (p) { balas({ ok: true, lat: p.coords.latitude, lng: p.coords.longitude }); },
+      function (err) { balas({ ok: false, code: err.code }); },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
   });
 
   // Jika dalam 25 detik SIMDES belum kirim sinyal siap (kemungkinan diblokir / error /
