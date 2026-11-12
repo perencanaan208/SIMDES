@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Verifikasi Surat Dinas - Desa Baleharjo</title>
+<style>
+*{box-sizing:border-box;} html,body{margin:0;min-height:100%;} body{background:#D3D8E0;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#555;padding:24px 12px;}
+.card{max-width:760px;margin:30px auto;background:#fff;padding:24px 24px 40px;} .kop{text-align:center;padding-bottom:18px;border-bottom:2px solid #000;margin-bottom:22px;}
+.kop img{height:130px;max-width:100%;object-fit:contain;display:block;margin:0 auto 14px;} .kop div{font-size:24px;font-weight:bold;line-height:1.15;color:#555;}
+h4{margin:14px 6px 4px;font-size:15px;text-decoration:underline;color:#555;} table{border-collapse:collapse;width:100%;} td{padding:9px 6px;vertical-align:top;color:#555;} td.l{width:200px;} td.c{width:20px;}
+.box{margin-top:22px;color:#fff;font-weight:bold;font-size:16px;text-align:center;padding:30px 20px;} .ok{background:#00A65A;border-left:4px solid #008d4c;} .no{background:#DD4B39;border-left:4px solid #C0392B;} .wait{background:#9CA3AF;}
+@media(max-width:520px){.kop div{font-size:18px;} td.l{width:105px;}}
+</style></head><body>
+<div class="card">
+  <div class="kop"><img id="logo" alt="Logo" style="display:none" onerror="this.style.display='none'">
+    <div>Pemerintah Kabupaten Sragen</div><div>Kecamatan Sukodono</div><div>Desa Baleharjo</div></div>
+  <div id="isi"></div>
+  <div id="status" class="box wait">Memeriksa data surat...</div>
+</div>
+<script>
+/* GANTI dengan URL deployment Web App Apps Script (yang berakhiran /exec) */
+var API_URL = 'GANTI_DENGAN_URL_EXEC_APPS_SCRIPT';
+
+function e(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function row(l, v) { return '<tr><td class="l">' + l + '</td><td class="c">:</td><td>' + e(v) + '</td></tr>'; }
+function tglId(iso) {
+  var b = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? (parseInt(m[3], 10) + ' ' + b[parseInt(m[2], 10) - 1] + ' ' + m[1]) : '-';
+}
+function status(cls, teks) { var s = document.getElementById('status'); s.className = 'box ' + cls; s.textContent = teks; }
+
+(function () {
+  var p = new URLSearchParams(location.search), id = p.get('id') || '', n = p.get('n') || '';
+  if (!id || !n) { status('no', 'QR Code tidak valid atau tautan tidak lengkap.'); return; }
+  if (API_URL.indexOf('https://') !== 0) { status('wait', 'Halaman verifikasi belum dikonfigurasi (API_URL).'); return; }
+  fetch(API_URL + '?type=verifikasi&id=' + encodeURIComponent(id) + '&n=' + encodeURIComponent(n))
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d.status !== 'ok') throw new Error(d.message || 'error');
+      if (!d.found) { status('no', 'Surat TIDAK ditemukan dalam database sistem informasi kami.'); return; }
+      var m = /[?&]id=([^&]+)/.exec(d.logo || '') || /\/d\/([^\/]+)/.exec(d.logo || '');
+      if (m) { var im = document.getElementById('logo'); im.src = 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w300'; im.style.display = 'block'; }
+      document.getElementById('isi').innerHTML =
+        '<h4>Menyatakan Bahwa :</h4><table>' + row('Nomor Surat', d.nomor) + row('Tanggal Surat', tglId(d.tgl)) + row('Perihal', d.perihal) + '</table>'
+        + '<h4>Ditandatangani oleh :</h4><table>' + row('Nama', d.nama) + row('Jabatan', d.jabatan) + '</table>';
+      status('ok', 'Adalah benar dan tercatat dalam database sistem informasi kami.');
+    })
+    .catch(function () { status('wait', 'Gagal menghubungi server. Periksa koneksi internet lalu muat ulang halaman.'); });
+})();
+</script>
+</body></html>
