@@ -7,6 +7,7 @@
 .kop img{height:130px;max-width:100%;object-fit:contain;display:block;margin:0 auto 14px;} .kop div{font-size:24px;font-weight:bold;line-height:1.15;color:#555;}
 h4{margin:14px 6px 4px;font-size:15px;text-decoration:underline;color:#555;} table{border-collapse:collapse;width:100%;} td{padding:9px 6px;vertical-align:top;color:#555;} td.l{width:200px;} td.c{width:20px;}
 .box{margin-top:22px;color:#fff;font-weight:bold;font-size:16px;text-align:center;padding:30px 20px;} .ok{background:#00A65A;border-left:4px solid #008d4c;} .no{background:#DD4B39;border-left:4px solid #C0392B;} .wait{background:#9CA3AF;}
+.box .sub{margin-top:8px;font-size:13px;font-weight:normal;opacity:.92;}
 @media(max-width:520px){.kop div{font-size:18px;} td.l{width:105px;}}
 </style></head><body>
 <div class="card">
@@ -26,23 +27,23 @@ function tglId(iso) {
   var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
   return m ? (parseInt(m[3], 10) + ' ' + b[parseInt(m[2], 10) - 1] + ' ' + m[1]) : '-';
 }
-function status(cls, teks) { var s = document.getElementById('status'); s.className = 'box ' + cls; s.textContent = teks; }
+function status(cls, teks, sub) { var s = document.getElementById('status'); s.className = 'box ' + cls; s.innerHTML = e(teks) + (sub ? '<div class="sub">' + e(sub) + '</div>' : ''); }
 
 (function () {
   var p = new URLSearchParams(location.search), id = p.get('id') || '', n = p.get('n') || '';
-  if (!id || !n) { status('no', 'QR Code tidak valid atau tautan tidak lengkap.'); return; }
+  if (!id || !n) { status('no', 'QR Code tidak valid atau tautan tidak lengkap.', 'Pemeriksaan dilakukan melalui SIMDES Desa Baleharjo'); return; }
   if (API_URL.indexOf('https://') !== 0) { status('wait', 'Halaman verifikasi belum dikonfigurasi (API_URL).'); return; }
   fetch(API_URL + '?type=verifikasi&id=' + encodeURIComponent(id) + '&n=' + encodeURIComponent(n))
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.status !== 'ok') throw new Error(d.message || 'error');
-      if (!d.found) { status('no', 'Surat TIDAK ditemukan dalam database sistem informasi kami.'); return; }
+      if (!d.found) { status('no', 'Surat TIDAK ditemukan dalam database sistem informasi kami.', 'Pemeriksaan dilakukan melalui SIMDES Desa Baleharjo'); return; }
       var m = /[?&]id=([^&]+)/.exec(d.logo || '') || /\/d\/([^\/]+)/.exec(d.logo || '');
       if (m) { var im = document.getElementById('logo'); im.src = 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w300'; im.style.display = 'block'; }
       document.getElementById('isi').innerHTML =
         '<h4>Menyatakan Bahwa :</h4><table>' + row('Nomor Surat', d.nomor) + row('Tanggal Surat', tglId(d.tgl)) + row('Perihal', d.perihal) + '</table>'
         + '<h4>Ditandatangani oleh :</h4><table>' + row('Nama', d.nama) + row('Jabatan', d.jabatan) + '</table>';
-      status('ok', 'Adalah benar dan tercatat dalam database sistem informasi kami.');
+      status('ok', 'Adalah benar dan tercatat dalam database sistem informasi kami.', 'Diverifikasi melalui SIMDES Desa Baleharjo');
     })
     .catch(function () { status('wait', 'Gagal menghubungi server. Periksa koneksi internet lalu muat ulang halaman.'); });
 })();
